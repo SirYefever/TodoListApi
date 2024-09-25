@@ -77,6 +77,7 @@ namespace TodoApi.Controllers
         [HttpPost]
         public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItem todoItem)
         {
+            todoItem.Id = 0;
             _context.TodoItems.Add(todoItem);
             await _context.SaveChangesAsync();
 
@@ -102,6 +103,17 @@ namespace TodoApi.Controllers
         private bool TodoItemExists(long id)
         {
             return _context.TodoItems.Any(e => e.Id == id);
+        }
+
+        [HttpPut("Load")]
+        public async Task<List<TodoItem>> LoadTodoItems(List<TodoItem> items) {
+            foreach (var item in items) {
+                item.Id = 0;
+            }
+            _context.TodoItems.RemoveRange(_context.TodoItems);
+            _context.TodoItems.AddRange(items);
+            await _context.SaveChangesAsync();
+            return items;
         }
     }
 }
