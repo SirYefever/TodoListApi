@@ -21,14 +21,14 @@ namespace TodoApi.Controllers
         }
 
         // GET: api/TodoItems
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
+        [HttpGet("GetTodoList")]
+        public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoList()
         {
             return await _context.TodoItems.ToListAsync();
         }
 
         // GET: api/TodoItems/5
-        [HttpGet("{id}")]
+        [HttpGet("GetTodo/{id}")]
         public async Task<ActionResult<TodoItem>> GetTodoItem(long id)
         {
             var todoItem = await _context.TodoItems.FindAsync(id);
@@ -43,8 +43,8 @@ namespace TodoApi.Controllers
 
         // PUT: api/TodoItems/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutTodoItem(long id, TodoItem todoItem)
+        [HttpPut("RedactTodoItem/{id}")]
+        public async Task<IActionResult> RedactTodoItem(long id, TodoItem todoItem)
         {
             if (id != todoItem.Id)
             {
@@ -71,11 +71,41 @@ namespace TodoApi.Controllers
 
             return NoContent();
         }
+        [HttpPut("ChangeCompleteStatus/{id}")]
+        public async Task<ActionResult<TodoItem>> ChangeCompleteStatus(long id)
+        {
+            var todoItem = await _context.TodoItems.FindAsync(id);
+
+            if (todoItem == null)
+            {
+                return NotFound();
+            }
+
+            todoItem.IsComplete = !todoItem.IsComplete;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!TodoItemExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return todoItem;
+        }
 
         // POST: api/TodoItems
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItemModel todoModel)
+        [HttpPost("AddTodo")]
+        public async Task<ActionResult<TodoItem>> AddTodo(TodoItemModel todoModel)
         {
             var todoItem = new TodoItem(todoModel.Name, todoModel.IsComplete);
             _context.TodoItems.Add(todoItem);
@@ -84,8 +114,26 @@ namespace TodoApi.Controllers
             return CreatedAtAction(nameof(GetTodoItem), todoItem);
         }
 
+
+        private bool TodoItemExists(long id)
+        {
+            return _context.TodoItems.Any(e => e.Id == id);
+        }
+
+        [HttpPut("LoadTodoList")]
+        public async Task<ActionResult<IEnumerable<TodoItem>>> LoadTodoList(List<TodoItemModel> itemModels)
+        {
+            _context.TodoItems.RemoveRange(_context.TodoItems);
+            foreach (var item in itemModels)
+            {
+                await AddTodo(item);
+            }
+            await _context.SaveChangesAsync();
+            return await _context.TodoItems.ToListAsync();
+        }
+
         // DELETE: api/TodoItems/5
-        [HttpDelete("{id}")]
+        [HttpDelete("DeleteTodo/{id}")]
         public async Task<IActionResult> DeleteTodoItem(long id)
         {
             var todoItem = await _context.TodoItems.FindAsync(id);
@@ -98,21 +146,6 @@ namespace TodoApi.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        private bool TodoItemExists(long id)
-        {
-            return _context.TodoItems.Any(e => e.Id == id);
-        }
-
-        [HttpPut("Load")]
-        public async Task<ActionResult<IEnumerable<TodoItem>>> LoadTodoItems(List<TodoItemModel> itemModels) {
-            _context.TodoItems.RemoveRange(_context.TodoItems);
-            foreach (var item in itemModels) {
-                await PostTodoItem(item);
-            }
-            await _context.SaveChangesAsync();
-            return await _context.TodoItems.ToListAsync();
         }
     }
 }
