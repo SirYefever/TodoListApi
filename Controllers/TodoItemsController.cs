@@ -75,13 +75,13 @@ namespace TodoApi.Controllers
         // POST: api/TodoItems
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItem todoItem)
+        public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItemModel todoModel)
         {
-            todoItem.Id = 0;
+            var todoItem = new TodoItem(todoModel.Name, todoModel.IsComplete);
             _context.TodoItems.Add(todoItem);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetTodoItem), new { id = todoItem.Id }, todoItem);
+            return CreatedAtAction(nameof(GetTodoItem), todoItem);
         }
 
         // DELETE: api/TodoItems/5
@@ -106,14 +106,13 @@ namespace TodoApi.Controllers
         }
 
         [HttpPut("Load")]
-        public async Task<List<TodoItem>> LoadTodoItems(List<TodoItem> items) {
-            foreach (var item in items) {
-                item.Id = 0;
-            }
+        public async Task<ActionResult<IEnumerable<TodoItem>>> LoadTodoItems(List<TodoItemModel> itemModels) {
             _context.TodoItems.RemoveRange(_context.TodoItems);
-            _context.TodoItems.AddRange(items);
+            foreach (var item in itemModels) {
+                await PostTodoItem(item);
+            }
             await _context.SaveChangesAsync();
-            return items;
+            return await _context.TodoItems.ToListAsync();
         }
     }
 }

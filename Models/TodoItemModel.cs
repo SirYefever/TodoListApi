@@ -1,16 +1,13 @@
 namespace TodoApi.Models;
 using System.ComponentModel.DataAnnotations;
 
-public class TodoItem
+public class TodoItemModel
 {
-    public TodoItem(string name, bool isComplete) {
-        Id = 0;
+    public TodoItemModel(string name, bool isComplete) {
         Name = name;
         IsComplete = isComplete;
     }
 
-    [Key]
-    public long Id { get; set; }
     [Required]
     public string? Name { get; set; }
     [Required]
