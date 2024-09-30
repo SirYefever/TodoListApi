@@ -1,15 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Models;
 
+// using System.Web.Http;
+using System.Web.Http.Cors;
+
 namespace TodoApi.Controllers
 {
-    [Route("api/[controller]")]
+    [EnableCors("_myAllowSpecificOrigins", "*", "*")]
+    [System.Web.Mvc.Route("api/[controller]")]
     [ApiController]
     public class TodoItemsController : ControllerBase
     {
@@ -111,7 +110,8 @@ namespace TodoApi.Controllers
             _context.TodoItems.Add(todoItem);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetTodoItem), todoItem);
+            // return CreatedAtAction(nameof(GetTodoItem), todoItem);
+            return todoItem;
         }
 
 
