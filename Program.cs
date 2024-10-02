@@ -20,7 +20,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
     {
         options.AddPolicy(MyAllowSpecificOrigins,
-            builder => builder.WithOrigins("http://192.168.111.137:8080")
+            builder => builder.WithOrigins("http://192.168.111.137:8080", "http://192.168.111.137:8081")
                               .AllowAnyHeader()
                               .AllowAnyMethod());
     });

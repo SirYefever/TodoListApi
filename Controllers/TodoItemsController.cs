@@ -63,12 +63,11 @@ namespace TodoApi.Controllers
         // PUT: api/TodoItems/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("ChangeTodoName/{id}")]
+        // public async Task<IActionResult> RedactTodoItem(long id, TodoItemModel todoModel) {
         public async Task<IActionResult> RedactTodoItem(long id, TodoItemModel todoModel) {
-            var redactedTodo = new TodoItem(id, todoModel.Name, todoModel.IsComplete);
+            // var isCompleteStatus = _context.TodoItems.Where(o => o.Id == id).Select(o => o.IsComplete).FirstOrDefault(); // Правильно находит, что видно в отладке.
+            var redactedTodo = new TodoItem(id, todoModel.Name, todoModel.IsComplete); 
             _context.Entry(redactedTodo).State = EntityState.Modified;
-            // var isCompleteStatus = _context.TodoItems.Find(id).IsComplete; // Правильно находит, что видно в отладке.
-            // var redactedTodo = new TodoItem(id, newName, isCompleteStatus); 
-            // _context.Entry(redactedTodo).State = EntityState.Modified;
 
             try
             {

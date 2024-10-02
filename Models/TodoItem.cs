@@ -15,4 +15,6 @@ public class TodoItem
     public string? Name { get; set; }
     [Required]
     public bool IsComplete { get; set; }
+    [Required]
+    public DateTime TimeAdded { get; set; }
 }
