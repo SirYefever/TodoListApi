@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations;
 
 public class TodoItem
 {
-    public TodoItem(string name, bool isComplete) {
-        Id = 0;
+    public TodoItem(long id, string name, bool isComplete) {
+        Id = id;
         Name = name;
         IsComplete = isComplete;
     }

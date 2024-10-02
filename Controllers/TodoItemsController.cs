@@ -4,14 +4,17 @@ using TodoApi.Models;
 
 // using System.Web.Http;
 using System.Web.Http.Cors;
+using System.ComponentModel.DataAnnotations;
+using System.Web.Helpers;
+using Newtonsoft.Json;
 
 namespace TodoApi.Controllers
 {
-    [EnableCors("_myAllowSpecificOrigins", "*", "*")]
     [System.Web.Mvc.Route("api/[controller]")]
     [ApiController]
     public class TodoItemsController : ControllerBase
     {
+        private long _todoIterator = 0;
         private readonly TodoContext _context;
 
         public TodoItemsController(TodoContext context)
@@ -40,17 +43,32 @@ namespace TodoApi.Controllers
             return todoItem;
         }
 
+        [HttpGet("GetTodoCounter")]
+        public ActionResult<string> GetTodoCounter(){
+            return JsonConvert.SerializeObject(_context.TodoItems.Count());
+        }
+
+        [HttpGet("GetDoneCounter")]
+        public ActionResult<string> GetDoneCounter(){
+            var doneCounter = 0;
+            foreach (TodoItem todo in _context.TodoItems) {
+                if (todo.IsComplete) {
+                    doneCounter++;
+                }
+            }
+            var doneCounterJson = JsonConvert.SerializeObject(doneCounter);
+            return doneCounterJson;
+        }
+
         // PUT: api/TodoItems/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("RedactTodoItem/{id}")]
-        public async Task<IActionResult> RedactTodoItem(long id, TodoItem todoItem)
-        {
-            if (id != todoItem.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(todoItem).State = EntityState.Modified;
+        [HttpPut("ChangeTodoName/{id}")]
+        public async Task<IActionResult> RedactTodoItem(long id, TodoItemModel todoModel) {
+            var redactedTodo = new TodoItem(id, todoModel.Name, todoModel.IsComplete);
+            _context.Entry(redactedTodo).State = EntityState.Modified;
+            // var isCompleteStatus = _context.TodoItems.Find(id).IsComplete; // Правильно находит, что видно в отладке.
+            // var redactedTodo = new TodoItem(id, newName, isCompleteStatus); 
+            // _context.Entry(redactedTodo).State = EntityState.Modified;
 
             try
             {
@@ -106,7 +124,8 @@ namespace TodoApi.Controllers
         [HttpPost("AddTodo")]
         public async Task<ActionResult<TodoItem>> AddTodo(TodoItemModel todoModel)
         {
-            var todoItem = new TodoItem(todoModel.Name, todoModel.IsComplete);
+            var todoItem = new TodoItem(_todoIterator, todoModel.Name, todoModel.IsComplete);
+            _todoIterator++;
             _context.TodoItems.Add(todoItem);
             await _context.SaveChangesAsync();
 
@@ -134,7 +153,7 @@ namespace TodoApi.Controllers
 
         // DELETE: api/TodoItems/5
         [HttpDelete("DeleteTodo/{id}")]
-        public async Task<IActionResult> DeleteTodoItem(long id)
+        public async Task<ActionResult<TodoItem>> DeleteTodoItem(long id)
         {
             var todoItem = await _context.TodoItems.FindAsync(id);
             if (todoItem == null)
@@ -145,7 +164,7 @@ namespace TodoApi.Controllers
             _context.TodoItems.Remove(todoItem);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return todoItem;
         }
     }
 }
