@@ -1,0 +1,16 @@
+
+        public int TodoComparison(TodoItem x, TodoItem y) {
+            return x.TimeAdded > y.TimeAdded ? 1 : -1;
+        }
+
+        public TodoItemsController(TodoContext context)
+        {
+            _context = context;
+        }
+
+        // GET: api/TodoItems
+        [HttpGet("GetTodoList")]
+        public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoList()
+        {
+            return  await _context.TodoItems.OrderByDescending(todo => todo.TimeAdded).ToListAsync();
+        }
